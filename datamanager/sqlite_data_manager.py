@@ -34,8 +34,8 @@ class SQLiteDataManager:
             year=year,
             rating=rating
         )
-        self.session.add(new_movie)  # Fügt den Film zur Sitzung hinzu
-        self.session.commit()  # Speichert die Änderungen in der Datenbank
+        self.session.add(new_movie)
+        self.session.commit()
         return new_movie
 
     # CRUD-Operationen für UserMovie (Beziehungstabelle)
