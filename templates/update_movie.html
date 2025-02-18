@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Movie</title>
+</head>
+<body>
+    <h1>Update Movie: {{ movie.name }}</h1>
+    <form action="/users/{{ user.id }}/update_movie/{{ movie.id }}" method="POST">
+        <label for="name">Movie Name:</label>
+        <input type="text" id="name" name="name" value="{{ movie.name }}" required><br>
+
+        <label for="director">Director:</label>
+        <input type="text" id="director" name="director" value="{{ movie.director }}"><br>
+
+        <label for="year">Year:</label>
+        <input type="number" id="year" name="year" value="{{ movie.year }}"><br>
+
+        <label for="rating">Rating:</label>
+        <input type="number" id="rating" name="rating" step="0.1" value="{{ movie.rating }}"><br>
+
+        <button type="submit">Update Movie</button>
+    </form>
+</body>
+</html>

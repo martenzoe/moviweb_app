@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Movies</title>
+</head>
+<body>
+    <h1>{{ user.name }}'s Favorite Movies</h1>
+    <ul>
+        {% for movie in movies %}
+            <li>
+                {{ movie.name }} ({{ movie.year }})
+                <a href="/users/{{ user.id }}/update_movie/{{ movie.id }}">Edit</a>
+                <form action="/users/{{ user.id }}/delete_movie/{{ movie.id }}" method="POST" style="display:inline;">
+                    <button type="submit">Delete</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="/users/{{ user.id }}/add_movie">Add Movie</a>
+</body>
+</html>
