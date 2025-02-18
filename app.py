@@ -52,10 +52,19 @@ def internal_server_error(e):
     """Handler für 500-Fehler."""
     return render_template('500.html'), 500
 
+
 @app.route('/')
 def home():
     """Startseite der Anwendung."""
-    return "Welcome to MovieWeb App!"
+    try:
+        # Hier könnten Sie zusätzliche Logik hinzufügen, z.B. das Abrufen von Daten für die Startseite
+        return render_template('home.html')
+    except Exception as e:
+        # Loggen Sie den Fehler
+        app.logger.error(f"Ein Fehler ist auf der Startseite aufgetreten: {str(e)}")
+
+        # Rendern Sie eine Fehlerseite
+        return render_template('500.html'), 500
 
 @app.route('/users', methods=['GET'])
 def list_users():
