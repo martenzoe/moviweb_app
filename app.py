@@ -55,18 +55,33 @@ def add_user():
     return render_template('add_user.html')
 
 
-@app.route('/users/<int:user_id>/add_movie', methods=['POST'])
+@app.route('/users/<int:user_id>/add_movie', methods=['GET', 'POST'])
 def add_movie(user_id):
     """Route: Fügt einen neuen Film zu den Lieblingsfilmen eines Benutzers hinzu."""
-    data = request.json  # Erwartet JSON-Daten im Format {"name": "Inception", ...}
-    new_movie = data_manager.add_movie(
-        name=data['name'],
-        director=data.get('director'),
-        year=data.get('year'),
-        rating=data.get('rating')
-    )
-    data_manager.add_favorite_movie(user_id=user_id, movie_id=new_movie.id)
-    return jsonify({"id": new_movie.id, "name": new_movie.name}), 201
+    # Überprüfen, ob der Benutzer existiert
+    user = data_manager.get_user_by_id(user_id)
+    if not user:
+        return jsonify({"error": f"User with ID {user_id} not found"}), 404
+
+    if request.method == 'POST':
+        # Hole die Filmdetails aus dem Formular
+        name = request.form['name']
+        director = request.form.get('director')
+        year = request.form.get('year')
+        rating = request.form.get('rating')
+
+        # Füge den Film zur Datenbank hinzu
+        new_movie = data_manager.add_movie(name=name, director=director, year=year, rating=rating)
+
+        # Verknüpfe den Film mit dem Benutzer
+        data_manager.add_favorite_movie(user_id=user_id, movie_id=new_movie.id)
+
+        # Weiterleitung zur Seite des Benutzers
+        return redirect(f'/users/{user_id}')
+
+    # GET: Zeige das Formular an
+    return render_template('add_movie.html', user=user)
+
 
 @app.route('/users/<int:user_id>/update_movie/<int:movie_id>', methods=['PUT'])
 def update_movie(movie_id):
