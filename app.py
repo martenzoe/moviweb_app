@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from datamanager import create_app
 from datamanager.sqlite_data_manager import SQLiteDataManager
+import os
 
 # Erstellt die Flask-App durch Aufruf der Factory-Funktion
 app = create_app()
@@ -17,7 +18,8 @@ def home():
 def list_users():
     """Route: Gibt eine Liste aller Benutzer zurück."""
     users = data_manager.get_all_users()
-    return jsonify([{"id": user.id, "name": user.name} for user in users])
+    return render_template('users.html', users=users)
+
 
 @app.route('/users/<int:user_id>', methods=['GET'])
 def user_movies(user_id):

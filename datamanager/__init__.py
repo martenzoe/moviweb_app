@@ -4,7 +4,8 @@ from datamanager.data_models import db
 
 def create_app():
     """Application Factory: Erstellt und konfiguriert die Flask-App."""
-    app = Flask(__name__)
+    app = Flask(__name__, template_folder='/Users/martenzollner/Desktop/new_projects/moviweb_app/templates')
+
 
     # Konfiguration der App
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///moviweb_app.db'
