@@ -1,27 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Update Movie</title>
-</head>
-<body>
-    <h1>Update Movie: {{ movie.name }}</h1>
-    <form action="/users/{{ user.id }}/update_movie/{{ movie.id }}" method="POST">
-        <label for="name">Movie Name:</label>
-        <input type="text" id="name" name="name" value="{{ movie.name }}" required><br>
+{% extends 'base.html' %}
 
-        <label for="director">Director:</label>
-        <input type="text" id="director" name="director" value="{{ movie.director }}"><br>
+{% block title %}Update {{ movie.name }} - MovieWeb App{% endblock %}
 
-        <label for="year">Year:</label>
-        <input type="number" id="year" name="year" value="{{ movie.year }}"><br>
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center text-primary mb-4">Update Movie: {{ movie.name }}</h1>
+    <form action="{{ url_for('update_movie', user_id=user.id, movie_id=movie.id) }}" method="POST" class="mt-4">
+        <div class="mb-3">
+            <label for="name" class="form-label">Movie Title:</label>
+            <input type="text" id="name" name="name" class="form-control" value="{{ movie.name }}" required>
+        </div>
 
-        <label for="rating">Rating:</label>
-        <input type="number" id="rating" name="rating" step="0.1" value="{{ movie.rating }}"><br>
+        <div class="mb-3">
+            <label for="director" class="form-label">Director:</label>
+            <input type="text" id="director" name="director" class="form-control" value="{{ movie.director }}">
+        </div>
 
-        <button type="submit">Update Movie</button>
+        <div class="mb-3">
+            <label for="year" class="form-label">Year:</label>
+            <input type="number" id="year" name="year" class="form-control" value="{{ movie.year }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="rating" class="form-label">Rating:</label>
+            <input type="number" id="rating" name="rating" step="0.1" class="form-control" value="{{ movie.rating }}">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update Movie</button>
+        <a href="{{ url_for('user_movies', user_id=user.id) }}" class="btn btn-secondary">Cancel</a>
     </form>
-    <a href="/users/{{ user.id }}">Back to {{ user.name }}'s Movies</a>
-</body>
-</html>
+</div>
+{% endblock %}
