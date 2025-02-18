@@ -118,14 +118,25 @@ def update_movie(user_id, movie_id):
     # GET: Zeige das Formular mit vorbefüllten Daten an
     return render_template('update_movie.html', user=user, movie=movie)
 
-@app.route('/users/<int:user_id>/delete_movie/<int:movie_id>', methods=['DELETE'])
+@app.route('/users/<int:user_id>/delete_movie/<int:movie_id>', methods=['POST'])
 def delete_movie(user_id, movie_id):
     """Route: Entfernt einen Film aus den Lieblingsfilmen eines Benutzers."""
-    success = data_manager.remove_favorite_movie(user_id=user_id, movie_id=movie_id)
-    if success:
-        return jsonify({"message": f"Movie {movie_id} removed from user {user_id}'s favorites"}), 200
-    else:
-        return jsonify({"error": f"Movie with ID {movie_id} not found for user {user_id}"}), 404
+    # Überprüfen, ob der Benutzer existiert
+    user = data_manager.get_user_by_id(user_id)
+    if not user:
+        return jsonify({"error": f"User with ID {user_id} not found"}), 404
+
+    # Überprüfen, ob der Film existiert
+    movie = data_manager.get_movie_by_id(movie_id)
+    if not movie:
+        return jsonify({"error": f"Movie with ID {movie_id} not found"}), 404
+
+    # Entferne den Film aus den Lieblingsfilmen des Benutzers
+    data_manager.remove_favorite_movie(user_id=user_id, movie_id=movie_id)
+
+    # Weiterleitung zur Seite des Benutzers
+    return redirect(f'/users/{user_id}')
+
 
 if __name__ == '__main__':
     # Startet den Flask-Entwicklungsserver
