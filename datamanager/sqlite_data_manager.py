@@ -79,3 +79,6 @@ class SQLiteDataManager:
         user = self.session.query(User).filter_by(id=user_id).first()
         return user
 
+    def get_movie_by_id(self, movie_id):
+        """Holt einen Film anhand seiner ID aus der Datenbank."""
+        return self.session.query(Movie).get(movie_id)

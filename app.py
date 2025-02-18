@@ -83,15 +83,40 @@ def add_movie(user_id):
     return render_template('add_movie.html', user=user)
 
 
-@app.route('/users/<int:user_id>/update_movie/<int:movie_id>', methods=['PUT'])
-def update_movie(movie_id):
+@app.route('/users/<int:user_id>/update_movie/<int:movie_id>', methods=['GET', 'POST'])
+def update_movie(user_id, movie_id):
     """Route: Aktualisiert die Details eines bestimmten Films."""
-    data = request.json  # Erwartet JSON-Daten mit den zu aktualisierenden Feldern
-    updated_movie = data_manager.update_movie(movie_id, **data)  # Sicherstellen, dass diese Methode existiert
-    if updated_movie:
-        return jsonify({"id": updated_movie.id, "name": updated_movie.name}), 200
-    else:
+    # Überprüfen, ob der Benutzer existiert
+    user = data_manager.get_user_by_id(user_id)
+    if not user:
+        return jsonify({"error": f"User with ID {user_id} not found"}), 404
+
+    # Überprüfen, ob der Film existiert
+    movie = data_manager.get_movie_by_id(movie_id)
+    if not movie:
         return jsonify({"error": f"Movie with ID {movie_id} not found"}), 404
+
+    if request.method == 'POST':
+        # Hole die aktualisierten Filmdetails aus dem Formular
+        name = request.form['name']
+        director = request.form.get('director')
+        year = request.form.get('year')
+        rating = request.form.get('rating')
+
+        # Aktualisiere den Film in der Datenbank
+        updated_movie = data_manager.update_movie(
+            movie_id=movie.id,
+            name=name,
+            director=director,
+            year=year,
+            rating=rating
+        )
+
+        # Weiterleitung zur Seite des Benutzers
+        return redirect(f'/users/{user_id}')
+
+    # GET: Zeige das Formular mit vorbefüllten Daten an
+    return render_template('update_movie.html', user=user, movie=movie)
 
 @app.route('/users/<int:user_id>/delete_movie/<int:movie_id>', methods=['DELETE'])
 def delete_movie(user_id, movie_id):
