@@ -23,9 +23,18 @@ def list_users():
 
 @app.route('/users/<int:user_id>', methods=['GET'])
 def user_movies(user_id):
-    """Route: Gibt die Lieblingsfilme eines bestimmten Benutzers zurück."""
-    movies = data_manager.get_favorite_movies_by_user(user_id)  # Angepasster Methodenname
-    return jsonify([{"id": movie.id, "name": movie.name} for movie in movies])
+    """Zeigt die Lieblingsfilme eines bestimmten Benutzers an."""
+    # Hole den Benutzer aus der Datenbank
+    user = data_manager.get_user_by_id(user_id)
+    if not user:
+        return jsonify({"error": f"User with ID {user_id} not found"}), 404
+
+    # Hole die Lieblingsfilme des Benutzers
+    movies = data_manager.get_favorite_movies_by_user(user_id)
+
+    # Rendere das Template und übergebe die Daten
+    return render_template('user_movies.html', user=user, movies=movies)
+
 
 @app.route('/add_user', methods=['POST'])
 def add_user():

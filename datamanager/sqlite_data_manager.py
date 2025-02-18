@@ -73,3 +73,9 @@ class SQLiteDataManager:
         if favorite:
             self.session.delete(favorite)
             self.session.commit()
+
+    def get_user_by_id(self, user_id):
+        """Holt einen Benutzer anhand seiner ID aus der Datenbank."""
+        user = self.session.query(User).filter_by(id=user_id).first()
+        return user
+
