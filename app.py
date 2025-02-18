@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect
 from datamanager import create_app
 from datamanager.sqlite_data_manager import SQLiteDataManager
 import os
@@ -36,12 +36,24 @@ def user_movies(user_id):
     return render_template('user_movies.html', user=user, movies=movies)
 
 
-@app.route('/add_user', methods=['POST'])
+@app.route('/add_user', methods=['GET', 'POST'])
 def add_user():
     """Route: Fügt einen neuen Benutzer hinzu."""
-    data = request.json  # Erwartet JSON-Daten im Format {"name": "John Doe"}
-    new_user = data_manager.add_user(data['name'])
-    return jsonify({"id": new_user.id, "name": new_user.name}), 201
+    if request.method == 'POST':
+        # Hole den Namen des Benutzers aus dem Formular
+        name = request.form['name']
+        if not name:
+            return "Name is required", 400  # Fehler, wenn der Name fehlt
+
+        # Füge den Benutzer über den DataManager hinzu
+        data_manager.add_user(name)
+
+        # Weiterleitung zur Benutzerliste
+        return redirect('/users')
+
+    # GET: Zeige das Formular an
+    return render_template('add_user.html')
+
 
 @app.route('/users/<int:user_id>/add_movie', methods=['POST'])
 def add_movie(user_id):
