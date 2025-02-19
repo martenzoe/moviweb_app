@@ -3,6 +3,7 @@ from datamanager import create_app
 from datamanager.sqlite_data_manager import SQLiteDataManager
 import requests
 import logging
+import traceback
 
 OMDB_API_KEY = "cafabb27"
 
@@ -42,8 +43,24 @@ def page_not_found(_e):
     return render_template('404.html'), 404
 
 @app.errorhandler(500)
-def internal_server_error(_e):
+def internal_server_error(e):
     return render_template('500.html'), 500
+
+@app.route('/movies/<int:movie_id>/delete', methods=['POST'])
+def delete_movie(movie_id):
+    try:
+        movie = data_manager.get_movie_by_id(movie_id)
+        if not movie:
+            return render_template('404.html'), 404
+
+        # Delete the movie from the database
+        data_manager.delete_movie(movie_id)
+
+        # Redirect back to the movies page
+        return redirect(url_for('list_movies'))
+    except Exception as e:
+        app.logger.error(f"Error deleting movie {movie_id}: {str(e)}")
+        return render_template('500.html'), 500
 
 @app.route('/')
 def home():
@@ -75,6 +92,15 @@ def user_movies(user_id):
         app.logger.error(f"Error fetching user {user_id}: {e}")
         return render_template('500.html'), 500
 
+@app.route('/movies', methods=['GET'])
+def list_movies():
+    try:
+        movies = data_manager.get_all_movies()
+        return render_template('movies.html', movies=movies)
+    except Exception as e:
+        app.logger.error(f"Error fetching movies: {e}")
+        return render_template('500.html'), 500
+
 @app.route('/add_user', methods=['GET', 'POST'])
 def add_user():
     if request.method == 'POST':
@@ -100,13 +126,22 @@ def add_movie(user_id):
 
         if request.method == 'POST':
             title = request.form['name']
+            director = request.form['director']
+            year = request.form['year']
+            rating = request.form['rating']
+            genre_names = request.form.getlist('genres')  # Get list of selected genres
+
+            # Fetch movie details from OMDb API if title is provided
+            if not title:
+                raise ValueError("Title is required")
+
             movie_details = fetch_movie_details(title)
 
             if not movie_details:
                 raise ValueError(f"OMDb API error: Unable to fetch movie details")
 
             genres = []
-            for genre_name in movie_details["genre"]:
+            for genre_name in genre_names:
                 genre = data_manager.get_genre_by_name(genre_name)
                 if not genre:
                     genre = data_manager.add_genre(genre_name)
@@ -126,6 +161,7 @@ def add_movie(user_id):
         return render_template('add_movie.html', user=user)
     except Exception as e:
         app.logger.error(f"Error adding movie for user {user_id}: {e}")
+        app.logger.error(traceback.format_exc())
         return render_template('500.html'), 500
 
 @app.route('/users/<int:user_id>/update_movie/<int:movie_id>', methods=['GET', 'POST'])
@@ -158,23 +194,7 @@ def update_movie(user_id, movie_id):
         return render_template('update_movie.html', user=user, movie=movie)
     except Exception as e:
         app.logger.error(f"Error updating movie {movie_id} for user {user_id}: {e}")
-        return render_template('500.html'), 500
-
-@app.route('/users/<int:user_id>/delete_movie/<int:movie_id>', methods=['POST'])
-def delete_movie(user_id, movie_id):
-    try:
-        user = data_manager.get_user_by_id(user_id)
-        if not user:
-            return render_template('404.html'), 404
-
-        movie = data_manager.get_movie_by_id(movie_id)
-        if not movie:
-            return render_template('404.html'), 404
-
-        data_manager.remove_favorite_movie(user_id=user.id, movie_id=movie.id)
-        return redirect(url_for('user_movies', user_id=user_id))
-    except Exception as e:
-        app.logger.error(f"Error deleting movie {movie_id} for user {user_id}: {e}")
+        app.logger.error(traceback.format_exc())
         return render_template('500.html'), 500
 
 @app.route('/genres', methods=['GET'])
@@ -184,6 +204,7 @@ def list_genres():
         return render_template('genres.html', genres=genres)
     except Exception as e:
         app.logger.error(f"Error fetching genres: {e}")
+        app.logger.error(traceback.format_exc())
         return render_template('500.html'), 500
 
 @app.route('/genres/<int:genre_id>', methods=['GET'])
@@ -195,6 +216,55 @@ def genre_movies(genre_id):
         return render_template('genre_movies.html', genre=genre)
     except Exception as e:
         app.logger.error(f"Error fetching movies for genre {genre_id}: {e}")
+        app.logger.error(traceback.format_exc())
+        return render_template('500.html'), 500
+
+@app.route('/genres/add', methods=['GET', 'POST'])
+def add_genre():
+    if request.method == 'POST':
+        try:
+            name = request.form['name']
+            if not name:
+                raise ValueError("Name is required")
+
+            data_manager.add_genre(name)
+            return redirect(url_for('list_genres'))
+        except Exception as e:
+            app.logger.error(f"Error adding genre: {e}")
+            app.logger.error(traceback.format_exc())
+            return render_template('500.html'), 500
+
+    return render_template('add_genre.html')
+
+@app.route('/genres/update/<int:genre_id>', methods=['GET', 'POST'])
+def update_genre(genre_id):
+    try:
+        genre = data_manager.get_genre_by_id(genre_id)
+        if not genre:
+            return render_template('404.html'), 404
+
+        if request.method == 'POST':
+            new_name = request.form['name']
+            if not new_name:
+                raise ValueError("Name is required")
+
+            data_manager.update_genre(genre_id, new_name)
+            return redirect(url_for('list_genres'))
+
+        return render_template('update_genre.html', genre=genre)
+    except Exception as e:
+        app.logger.error(f"Error updating genre {genre_id}: {e}")
+        app.logger.error(traceback.format_exc())
+        return render_template('500.html'), 500
+
+@app.route('/genres/delete/<int:genre_id>', methods=['POST'])
+def delete_genre(genre_id):
+    try:
+        data_manager.delete_genre(genre_id)
+        return redirect(url_for('list_genres'))
+    except Exception as e:
+        app.logger.error(f"Error deleting genre {genre_id}: {e}")
+        app.logger.error(traceback.format_exc())
         return render_template('500.html'), 500
 
 @app.route('/movies/<int:movie_id>/add_review', methods=['GET', 'POST'])
@@ -215,6 +285,7 @@ def add_review(movie_id):
         return render_template('add_review.html', movie=movie, users=users)
     except Exception as e:
         app.logger.error(f"Error adding review for movie {movie_id}: {e}")
+        app.logger.error(traceback.format_exc())
         return render_template('500.html'), 500
 
 @app.route('/movies/<int:movie_id>', methods=['GET'])
@@ -227,7 +298,9 @@ def movie_details(movie_id):
         return render_template('movie_details.html', movie=movie, reviews=reviews)
     except Exception as e:
         app.logger.error(f"Error fetching details for movie {movie_id}: {e}")
+        app.logger.error(traceback.format_exc())
         return render_template('500.html'), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
+

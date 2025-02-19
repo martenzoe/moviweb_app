@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}All Movies{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>All Movies</h1>
+        <div class="row">
+            {% for movie in movies %}
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <img src="{{ movie.poster }}" class="card-img-top movie-poster" alt="{{ movie.name }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ movie.name }}</h5>
+                            <p class="card-text">Director: {{ movie.director }}</p>
+                            <a href="{{ url_for('movie_details', movie_id=movie.id) }}" class="btn btn-primary">Details</a>
+                            <!-- Delete Button -->
+                            <form action="{{ url_for('delete_movie', movie_id=movie.id) }}" method="POST" class="d-inline mt-2">
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this movie?')">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <a href="{{ url_for('home') }}" class="btn btn-secondary mt-3">Zurück zur Startseite</a>
+    </div>
+{% endblock %}

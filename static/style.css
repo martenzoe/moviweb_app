@@ -1,0 +1,11 @@
+.movie-poster {
+    max-width: 200px;
+    height: auto;
+    object-fit: cover;
+    margin: 0 auto;
+}
+
+.card {
+    max-width: 220px;
+    margin: 0 auto;
+}

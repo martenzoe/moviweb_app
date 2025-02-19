@@ -26,6 +26,23 @@
             <input type="number" id="rating" name="rating" step=".1" class="form-control">
         </div>
 
+        <div class="mb-3">
+            <label for="genres" class="form-label">Genres</label>
+            <select class="form-select" id="genres" name="genres" multiple required>
+                <option value="Action">Action</option>
+                <option value="Comedy">Comedy</option>
+                <option value="Drama">Drama</option>
+                <option value="Sci-Fi">Sci-Fi</option>
+                <option value="Horror">Horror</option>
+                <option value="Thriller">Thriller</option>
+                <option value="Romance">Romance</option>
+                <option value="Animation">Animation</option>
+                <option value="Adventure">Adventure</option>
+                <option value="Crime">Crime</option>
+                <option value="Fantasy">Fantasy</option>
+            </select>
+        </div>
+
         <button type="submit" class="btn btn-primary">Add Movie</button>
         <a href="{{ url_for('user_movies', user_id=user.id) }}" class="btn btn-secondary">Back to {{ user.name }}'s Movies</a>
     </form>

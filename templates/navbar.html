@@ -15,7 +15,12 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('add_user') }}">Add User</a>
                 </li>
-                <!-- Wir entfernen den Movies-Dropdown, da wir keine separate Filmliste haben -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('list_genres') }}">Genres</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('list_movies') }}">All Movies</a>
+                </li>
             </ul>
         </div>
     </div>

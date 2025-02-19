@@ -1,6 +1,7 @@
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from datamanager.data_models import db, User, Movie, UserMovie, Genre, Review
+from sqlalchemy.orm.exc import NoResultFound
 
 class SQLiteDataManager:
     def __init__(self, db_file_name):
@@ -157,3 +158,23 @@ class SQLiteDataManager:
         if movie and genre:
             movie.genres.remove(genre)
             self.session.commit()
+
+    def delete_movie(self, movie_id):
+        try:
+            movie = self.session.query(Movie).get(movie_id)
+            if movie:
+                # Entferne alle Beziehungen zu Benutzern
+                self.session.query(UserMovie).filter_by(movie_id=movie_id).delete()
+
+                # Entferne alle Reviews für diesen Film
+                self.session.query(Review).filter_by(movie_id=movie_id).delete()
+
+                # Entferne den Film selbst
+                self.session.delete(movie)
+                self.session.commit()
+                return True
+            return False
+        except Exception as e:
+            self.session.rollback()
+            print(f"Error in delete_movie: {str(e)}")
+            return False
