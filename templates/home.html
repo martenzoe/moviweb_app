@@ -1,12 +1,36 @@
 {% extends 'base.html' %}
 
-{% block title %}Home - MovieWeb App{% endblock %}
-
 {% block content %}
-<div class="container text-center mt-5">
-    <h1 class="display-4 text-primary">Welcome to MovieWeb App!</h1>
-    <p class="lead">Manage your favorite movies and users easily.</p>
-    <a href="{{ url_for('list_users') }}" class="btn btn-primary btn-lg">View Users</a>
-    <a href="{{ url_for('add_user') }}" class="btn btn-success btn-lg">Add a User</a>
-</div>
+    <h1>Welcome to MovieWeb App</h1>
+
+    <h2>Recently Added Movies</h2>
+    <div class="row">
+        {% for movie in recently_added %}
+            <div class="col-md-2 mb-3">
+                <div class="card">
+                    <img src="{{ movie.poster }}" class="card-img-top" alt="{{ movie.name }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ movie.name }}</h5>
+                        <a href="{{ url_for('movie_details', movie_id=movie.id) }}" class="btn btn-primary btn-sm">Details</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <h2>Top Rated Movies</h2>
+    <div class="row">
+        {% for movie in top_rated %}
+            <div class="col-md-2 mb-3">
+                <div class="card">
+                    <img src="{{ movie.poster }}" class="card-img-top" alt="{{ movie.name }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ movie.name }}</h5>
+                        <p class="card-text">Rating: {{ movie.rating }}</p>
+                        <a href="{{ url_for('movie_details', movie_id=movie.id) }}" class="btn btn-primary btn-sm">Details</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 {% endblock %}

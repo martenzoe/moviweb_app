@@ -1,24 +1,20 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ genre.name }} Movies{% endblock %}
-
 {% block content %}
-    <div class="container">
-        <h1>{{ genre.name }} Movies</h1>
-        <div class="row">
-            {% for movie in genre.movies %}
-                <div class="col-md-4 mb-3">
-                    <div class="card">
-                        <img src="{{ movie.poster }}" class="card-img-top" alt="{{ movie.name }}">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ movie.name }}</h5>
-                            <p class="card-text">Director: {{ movie.director }}</p>
-                            <a href="{{ url_for('movie_details', movie_id=movie.id) }}" class="btn btn-primary">Details</a>
-                        </div>
+    <h1>Movies in {{ genre.name }}</h1>
+
+    <div class="row">
+        {% for movie in movies %}
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <img src="{{ movie.poster }}" class="card-img-top" alt="{{ movie.name }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ movie.name }}</h5>
+                        <p class="card-text">Director: {{ movie.director }}</p>
+                        <a href="{{ url_for('movie_details', movie_id=movie.id) }}" class="btn btn-primary">Details</a>
                     </div>
                 </div>
-            {% endfor %}
-        </div>
-        <a href="{{ url_for('genres') }}" class="btn btn-secondary mt-3">Zurück zu den Genres</a>
+            </div>
+        {% endfor %}
     </div>
 {% endblock %}

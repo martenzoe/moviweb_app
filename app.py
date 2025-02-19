@@ -65,7 +65,9 @@ def delete_movie(movie_id):
 @app.route('/')
 def home():
     try:
-        return render_template('home.html')
+        recently_added = data_manager.get_recently_added_movies()
+        top_rated = data_manager.get_top_rated_movies()
+        return render_template('home.html', recently_added=recently_added, top_rated=top_rated)
     except Exception as e:
         app.logger.error(f"Ein Fehler ist auf der Startseite aufgetreten: {str(e)}")
         return render_template('500.html'), 500
@@ -213,7 +215,9 @@ def genre_movies(genre_id):
         genre = data_manager.get_genre_by_id(genre_id)
         if not genre:
             return render_template('404.html'), 404
-        return render_template('genre_movies.html', genre=genre)
+        # Get movies for the genre
+        movies = genre.movies
+        return render_template('genre_movies.html', genre=genre, movies=movies)
     except Exception as e:
         app.logger.error(f"Error fetching movies for genre {genre_id}: {e}")
         app.logger.error(traceback.format_exc())

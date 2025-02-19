@@ -185,3 +185,9 @@ class SQLiteDataManager:
             (Movie.name.ilike(search)) |
             (Movie.director.ilike(search))
         ).all()
+
+    def get_recently_added_movies(self, limit=5):
+        return self.session.query(Movie).order_by(Movie.id.desc()).limit(limit).all()
+
+    def get_top_rated_movies(self, limit=5):
+        return self.session.query(Movie).order_by(Movie.rating.desc()).limit(limit).all()
