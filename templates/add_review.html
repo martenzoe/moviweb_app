@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Review for {{ movie.name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>Add Review for {{ movie.name }}</h1>
+        <form method="post">
+            <div class="mb-3">
+                <label for="text" class="form-label">Review Text</label>
+                <textarea class="form-control" id="text" name="text" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="rating" class="form-label">Rating (1-5)</label>
+                <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" required>
+            </div>
+            <div class="mb-3">
+                <label for="user_id" class="form-label">User</label>
+                <select class="form-select" id="user_id" name="user_id" required>
+                    {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Review</button>
+        </form>
+        <a href="{{ url_for('movie_details', movie_id=movie.id) }}" class="btn btn-secondary mt-3">Back to Movie Details</a>
+    </div>
+{% endblock %}

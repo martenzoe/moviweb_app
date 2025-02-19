@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Genres{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>Genres</h1>
+        <ul class="list-group">
+            {% for genre in genres %}
+                <li class="list-group-item">
+                    <a href="{{ url_for('genre_movies', genre_id=genre.id) }}">{{ genre.name }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for('home') }}" class="btn btn-secondary mt-3">Zurück zur Startseite</a>
+    </div>
+{% endblock %}
