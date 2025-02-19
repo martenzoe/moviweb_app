@@ -1,0 +1,16 @@
+:root {
+  --primary-color: #007bff;
+  --secondary-color: #6c757d;
+  --background-color: #f8f9fa;
+  --text-color: #333;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+
+body {
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+}
