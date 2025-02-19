@@ -301,6 +301,16 @@ def movie_details(movie_id):
         app.logger.error(traceback.format_exc())
         return render_template('500.html'), 500
 
+@app.route('/search', methods=['GET'])
+def search_movies():
+    query = request.args.get('query', '')
+    if query:
+        movies = data_manager.search_movies(query)
+    else:
+        movies = []
+    return render_template('search_results.html', movies=movies, query=query)
+
+
 if __name__ == '__main__':
     app.run(debug=True)
 

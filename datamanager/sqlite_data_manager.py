@@ -178,3 +178,10 @@ class SQLiteDataManager:
             self.session.rollback()
             print(f"Error in delete_movie: {str(e)}")
             return False
+
+    def search_movies(self, query):
+        search = f"%{query}%"
+        return self.session.query(Movie).filter(
+            (Movie.name.ilike(search)) |
+            (Movie.director.ilike(search))
+        ).all()
