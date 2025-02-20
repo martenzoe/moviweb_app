@@ -1,3 +1,7 @@
+"""
+This module defines the database models for the MovieWeb application.
+"""
+
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, UTC
 
@@ -9,12 +13,18 @@ movie_genre = db.Table('movie_genre',
 )
 
 class User(db.Model):
+    """
+    Represents a user in the system.
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     favorite_movies = db.relationship('Movie', secondary='user_movie', backref=db.backref('users', lazy=True))
     reviews = db.relationship('Review', backref='user', lazy=True)
 
 class Movie(db.Model):
+    """
+    Represents a movie in the system.
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     director = db.Column(db.String(50), nullable=True)
@@ -25,16 +35,25 @@ class Movie(db.Model):
     reviews = db.relationship('Review', backref='movie', lazy=True)
 
 class UserMovie(db.Model):
+    """
+    Represents the association between a user and their favorite movies.
+    """
     __tablename__ = 'user_movie'
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     movie_id = db.Column(db.Integer, db.ForeignKey('movie.id'), primary_key=True)
     date_added = db.Column(db.DateTime, default=lambda: datetime.now(UTC))
 
 class Genre(db.Model):
+    """
+    Represents a movie genre.
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(30), nullable=False, unique=True)
 
 class Review(db.Model):
+    """
+    Represents a user's review of a movie.
+    """
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.Text, nullable=False)
     rating = db.Column(db.Float, nullable=False)
