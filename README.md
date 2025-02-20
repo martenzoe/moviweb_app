@@ -21,6 +21,8 @@ A web application for managing and reviewing movies, built with Flask and SQLAlc
 - **Search functionality**: Search for movies by title or director
 - **Integration with OMDb API** for fetching movie details
 
+![MovieWeb App Overview](moviwebapp%20overview%20screenshot.png)
+
 ## Installation
 
 ### Clone the repository:
