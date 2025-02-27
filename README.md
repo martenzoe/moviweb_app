@@ -20,8 +20,8 @@ A web application for managing and reviewing movies, built with Flask and SQLAlc
 - **Genre management**: Add, update, and delete movie genres
 - **Search functionality**: Search for movies by title or director
 - **Integration with OMDb API** for fetching movie details
-- Movie Recommendations: Get personalized movie recommendations based on your preferences using an Open Ai Api Key from RAPIDAPI
-- AI-powered Movie Analysis: Gain detailed insights and analysis of movies using ChatGPT
+- **Movie Recommendations: Get personalized movie recommendations based on your preferences using an Open Ai Api Key from RAPIDAPI
+- **AI-powered Movie Analysis: Gain detailed insights and analysis of movies using ChatGPT
 
 ![MovieWeb App Overview](moviwebapp%20overview%20screenshot.png)
 
