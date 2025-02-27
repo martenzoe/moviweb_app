@@ -9,3 +9,10 @@
     max-width: 220px;
     margin: 0 auto;
 }
+
+#recommendations li {
+    font-size: 1.2em;
+    margin-bottom: 0.5em;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5em;
+}

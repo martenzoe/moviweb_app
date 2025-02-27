@@ -8,9 +8,12 @@
 
     <ul class="list-group">
         {% for user in users %}
-            <li class="list-group-item">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
                 <a href="{{ url_for('user_movies', user_id=user.id) }}" class="text-decoration-none text-dark fw-bold">
                     {{ user.name }}
+                </a>
+                <a href="{{ url_for('show_recommendations', user_id=user.id) }}" class="btn btn-primary btn-sm">
+                    Show Recommendations
                 </a>
             </li>
         {% endfor %}

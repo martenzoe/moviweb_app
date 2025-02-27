@@ -1,16 +1,75 @@
 """
 This module defines the Flask application routes and logic for the MovieWeb app.
 """
-
+import os
 import logging
 import traceback
 import requests
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for, jsonify
 from datamanager import create_app
 from datamanager.sqlite_data_manager import SQLiteDataManager
+from dotenv import load_dotenv
+import sqlite3
 
-# Constants
-OMDB_API_KEY = "cafabb27"
+# Load environment variables
+load_dotenv()
+
+# Konstanten aus Umgebungsvariablen laden
+RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")
+RAPIDAPI_HOST = os.getenv("RAPIDAPI_HOST")
+OMDB_API_KEY = os.getenv("OMDB_API_KEY")  # OMDB API Key aus .env laden
+
+
+def get_chatgpt_response(prompt):
+    """
+    Ruft eine Antwort von ChatGPT über RapidAPI ab.
+
+    Args:
+        prompt (str): Die Frage oder Anweisung, die an ChatGPT gesendet wird.
+
+    Returns:
+        str: Die Antwort von ChatGPT oder None im Fehlerfall.
+    """
+    url = "https://open-ai21.p.rapidapi.com/conversationllama"
+
+    payload = {
+        "messages": [
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
+    }
+    headers = {
+        "content-type": "application/json",
+        "X-RapidAPI-Key": RAPIDAPI_KEY,
+        "X-RapidAPI-Host": RAPIDAPI_HOST
+    }
+
+    try:
+        print(f"Sending request to: {url}")
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()  # Wirf einen Fehler für HTTP-Fehlercodes
+
+        data = response.json()
+        print(f"RapidAPI response: {data}")  # Gib die vollständige Antwort aus
+
+        # Annahme: Die Antwort ist in einem Feld namens "choices" und dann "text"
+        # Dies ist wahrscheinlich FALSCH. Passe es an das korrekte Format an.
+        if "result" in data:
+            recommendations = data["result"]
+            return recommendations
+        else:
+            print("Unexpected response format from RapidAPI")
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"RapidAPI Request Error: {e}")
+        return None
+    except (KeyError, IndexError, TypeError) as e:
+        print(f"Error parsing RapidAPI response: {e}")
+        return None
+
+
 DATABASE_FILE = 'instance/moviweb_app.db'
 
 # Initialize Flask application and data manager
@@ -456,26 +515,33 @@ def add_review(movie_id: int):
 
         if request.method == 'POST':
             text = request.form['text']
-            rating = float(request.form['rating'])
-            user_id = int(request.form['user_id'])
-            data_manager.add_review(text, rating, user_id, movie_id)
-            return redirect(url_for('movie_details', movie_id=movie_id))
+            rating = request.form['rating']
 
-        users = data_manager.get_all_users()
-        return render_template('add_review.html', movie=movie, users=users)
-    except ValueError as e:
-        app.logger.warning(f"Validation error: {e}")
-        return render_template('add_review.html', movie=movie, users=users, error=str(e))
+            # Get user information (you may need to implement user authentication)
+            user = data_manager.get_user_by_id(1)  # Default user
+            if not user:
+                return render_template('404.html'), 404
+
+            data_manager.add_review(
+                movie_id=movie.id,
+                user_id=user.id,
+                text=text,
+                rating=rating
+            )
+
+            return redirect(url_for('movie_details', movie_id=movie.id))
+
+        return render_template('add_review.html', movie=movie)
     except Exception as e:
         app.logger.error(f"Error adding review for movie {movie_id}: {e}")
         app.logger.error(traceback.format_exc())
         return render_template('500.html'), 500
 
 
-@app.route('/movies/<int:movie_id>', methods=['GET'])
+@app.route('/movies/<int:movie_id>')
 def movie_details(movie_id: int):
     """
-    Displays details for a specific movie.
+    Shows details for a specific movie.
 
     Args:
         movie_id (int): The ID of the movie.
@@ -487,29 +553,76 @@ def movie_details(movie_id: int):
         movie = data_manager.get_movie_by_id(movie_id)
         if not movie:
             return render_template('404.html'), 404
+
         reviews = data_manager.get_reviews_by_movie(movie_id)
         return render_template('movie_details.html', movie=movie, reviews=reviews)
     except Exception as e:
-        app.logger.error(f"Error fetching details for movie {movie_id}: {e}")
+        app.logger.error(f"Error fetching movie {movie_id}: {e}")
         app.logger.error(traceback.format_exc())
         return render_template('500.html'), 500
 
 
-@app.route('/search', methods=['GET'])
-def search_movies():
+@app.route('/recommend_movies/<int:user_id>', methods=['GET'])
+def recommend_movies(user_id: int):
     """
-    Searches for movies based on a query.
+    Generates movie recommendations for a user using ChatGPT via RapidAPI.
+
+    Args:
+        user_id (int): The ID of the user.
 
     Returns:
-        Response: A Flask response rendering the search_results.html template.
+        Response: A JSON response with movie recommendations or an error message.
     """
-    query = request.args.get('query', '')
-    if query:
-        movies = data_manager.search_movies(query)
-    else:
-        movies = []
-    return render_template('search_results.html', movies=movies, query=query)
+    try:
+        user = data_manager.get_user_by_id(user_id)
+        if not user:
+            return jsonify({"error": "User not found"}), 404
 
+        favorite_movies = data_manager.get_favorite_movies_by_user(user_id)
+        favorite_titles = [movie.name for movie in favorite_movies]
+
+        prompt = f"Basierend auf diesen Lieblingsfilmen: {', '.join(favorite_titles)}, schlage 5 weitere Filme vor, die dem Benutzer gefallen könnten."
+        recommendations = get_chatgpt_response(prompt)
+
+        if recommendations:
+            recommendations = recommendations.split('\n')  # Passe dies an das tatsächliche Antwortformat an
+            return render_template('movie_recommendations.html', user=user, recommendations=recommendations)
+        else:
+            app.logger.error("Konnte keine Empfehlungen von RapidAPI generieren.")
+            return render_template('500.html'), 500
+    except Exception as e:
+        app.logger.error(f"Error generating recommendations: {e}")
+        return render_template('500.html'), 500
+
+@app.route('/user/<int:user_id>/recommendations')
+def show_recommendations(user_id):
+    """
+    Zeigt die Filmempfehlungen für einen Benutzer an.
+
+    Args:
+        user_id (int): Die ID des Benutzers.
+
+    Returns:
+        Response: Eine Flask-Response, die das movie_recommendations.html Template rendert.
+    """
+    return recommend_movies(user_id)
+
+
+@app.route('/search_movies', methods=['GET'])
+def search_movies():
+    """
+    Sucht nach Filmen basierend auf der Suchanfrage.
+
+    Returns:
+        Response: Eine Flask-Response, die das Suchergebnis-Template rendert.
+    """
+    query = request.args.get('query')  # Hole die Suchanfrage aus den Query-Parametern
+    if query:
+        # Hier solltest du deine Filmdatenbank durchsuchen
+        movies = data_manager.search_movies(query)  # Verwende die Suchfunktion des DataManagers
+        return render_template('search_results.html', movies=movies, query=query)
+    else:
+        return render_template('search_results.html', movies=[], query='')  # Leere Ergebnisse
 
 if __name__ == '__main__':
     app.run(debug=True)
